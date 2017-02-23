@@ -6,7 +6,7 @@
 #install the gdata and plyr packages and load in to R.
 library(plyr)
 library(gdata)
-setwd("/home/mcdevitt/_smu/msds 6306 - data science/semaine 6/")
+setwd("./data")
 
 
 
@@ -55,4 +55,5 @@ summary(bk.homes[which(bk.homes$sale.price.n<100000),])
 ## remove outliers that seem like they weren't actual sales
 bk.homes$outliers <- (log10(bk.homes$sale.price.n) <=5) + 0
 bk.homes <- bk.homes[which(bk.homes$outliers==0),]
+
 plot(log10(bk.homes$gross.sqft),log10(bk.homes$sale.price.n))
