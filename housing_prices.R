@@ -6,12 +6,17 @@
 #install the gdata and plyr packages and load in to R.
 library(plyr)
 library(gdata)
-setwd("./data")
 
 
+data_dir <- "./data"
+analysis_dir <- "./analysis"
+paper_dir <- "./paper"
 
-# So, save the file as a csv and use read.csv instead
-bk <- read.csv("rollingsales_manhattan.csv",skip=4,header=TRUE)
+sales_data_filename <- "rollingsales_manhattan.csv"
+
+# Save the file as a csv and use read.csv instead
+
+bk <- read.csv(paste0(data_dir, "/", sales_data_filename), skip = 4, header = TRUE)
 
 ## Check the data
 head(bk)
@@ -51,9 +56,13 @@ dim(bk.homes)
 plot(log10(bk.homes$gross.sqft),log10(bk.homes$sale.price.n))
 summary(bk.homes[which(bk.homes$sale.price.n<100000),])
 
-
 ## remove outliers that seem like they weren't actual sales
 bk.homes$outliers <- (log10(bk.homes$sale.price.n) <=5) + 0
 bk.homes <- bk.homes[which(bk.homes$outliers==0),]
 
+png(filename = paste0(analysis_dir, "/", "price_per_sq_ft.png"))
 plot(log10(bk.homes$gross.sqft),log10(bk.homes$sale.price.n))
+dev.off()
+
+
+

@@ -1,7 +1,7 @@
 # lsa_28feb
 live session assignment - data science - 28-feb
 
-**bold**Goal: __bold__  Create an RStudio project for the analysis of this data set. Your file structure within the project should include the following:
+** Goal: **  Create an RStudio project for the analysis of this data set. Your file structure within the project should include the following:
 
 1. A README file in the project root directory that includes an explanation of the purpose of the project and the other files
 
