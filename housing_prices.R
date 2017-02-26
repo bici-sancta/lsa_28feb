@@ -129,16 +129,16 @@ boxplot(log10(sale.price.n) ~ neighborhood, data = bk.homes)
 boxplot(log10(sale.price.n) ~ total.units, data = bk.homes)
 boxplot(log10(sale.price.n) ~ tax.class.at.present, data = bk.homes)
 
-aggregate(bk.homes,
-			   by = list(zip.code),
-			   FUN = mean,
-			   na.rm = TRUE)
-#print(agg_by_zip)
+by_zip <- ddply(bk.homes, c("neighborhood"), summarise,
+               N    = sum(!is.na(log_price)),
+               mean = mean(log_price, na.rm=TRUE),
+               sd   = sd(log_price, na.rm=TRUE),
+               se   = sd / sqrt(N)
+)
 
 bk.homes$dates <- as.Date(bk.homes$sale.date, "%m/%d/%Y")
-plot(log_price ~ dates, data = bk.homes)
-
-
+plot(log_price ~ dates, data = bk.homes, col = "blue")
+abline(lm(log_price ~ dates, data = bk.homes), col = "black", lty = 3, lwd = 3)
 
 
 
