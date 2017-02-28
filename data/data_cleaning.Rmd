@@ -1,6 +1,6 @@
 ---
-title: "data_cleaning"
-author: "mcdevitt"
+title: "Manhattan Borough - Housing Sale Prices"
+author: "Robert Flamenbaum, Samira Zarandioon, Patrick McDevitt"
 date: "22 fév 2017"
 #knit : (function(inputFile,encoding){
 #			rmarkdown::render(inputFile,
@@ -12,21 +12,14 @@ output:
     fig_caption: yes
 ---
 
-```{r outputfiles}
-out_dir <- 'analysis'
-if(!file.exists(out_dir)) {
-  dir.create(out_dir)
-}
-```
-
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 
 ```
 
-### Manhattan Borough Housing Sale Prices
+### Data Cleaning
 
-```{r nyc housing, echo=FALSE}
+```{r nyc housing, echo=FALSE, message = FALSE}
 
 # Author: Benjamin Reddy
 # Taken from pages 49-50 of O'Neil and Schutt
@@ -52,7 +45,6 @@ rm(list=ls())
 # ...	identify some directories for output
 # ...	-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-
 home_dir <- "/home/mcdevitt/_smu/msds 6306 - data science/semaine 6/lsa_28feb"
 data_dir <- "./data"
 analysis_dir <- "./analysis"
@@ -61,6 +53,23 @@ paper_dir <- "./paper"
 setwd(home_dir)
 setwd(data_dir)
 
+```
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+__Ph I - Create quality data set to support analysis__  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+
+First steps ...  
+- read in .csv file of Manhattan Borough property sale prices  
+- change names of any variables that begins with digits  
+- convert variable names to lower case  
+- do some initial data exploration to identify outliers, useful transformations  
+
+  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+
+
+```{r echo=FALSE, message = FALSE}
 # ...	-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # ...	read in .csv file of manhattan sale prices
 # ...	-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -75,9 +84,9 @@ bk <- read.csv(paste0(sales_data_filename),
 # ...	evalaute data and clean
 # ...	-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-head(bk)
-summary(bk)
-str(bk)
+#head(bk)
+#summary(bk)
+#str(bk)
 
 ## clean/format the data with regular expressions
 ## More on these later. For now, know that the
@@ -104,36 +113,45 @@ bk$year.built <- as.numeric(as.character(bk$year.built))
 ## do a bit of exploration to make sure there's not anything
 ## weird going on with sale prices
 
+```
+
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+__Histogram of Raw Data Set__  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+
+
+```{r echo=FALSE, message = FALSE}
+
 attach(bk)
-iplt = 1;
-png(filename = paste0("plot_", iplt, ".png"))
 hist(sale.price.n) 
-dev.off()
 detach(bk)
 
 ## keep only the actual sales
 
 bk.sale <- bk[bk$sale.price.n != 0,]
 
-iplt <- iplt + 1
-png(filename = paste0("plot_", iplt, ".png"))
-plot(bk.sale$gross.sqft, bk.sale$sale.price.n)
-dev.off()
 
-iplt <- iplt + 1
-png(filename = paste0("plot_", iplt, ".png"))
+```
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+__Scatter Plots of Sq-Ft vs. Sale Price__  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+
+
+```{r echo=FALSE, message = FALSE}
+
+plot(bk.sale$gross.sqft, bk.sale$sale.price.n)
+
 plot(log10(bk.sale$gross.sqft), log10(bk.sale$sale.price.n))
-dev.off()
 
 ## for now, let's look at 1-, 2-, and 3-family homes
 
 bk.homes <- bk.sale[which(grepl("FAMILY", bk.sale$building.class.category)),]
 dim(bk.homes)
 
-iplt <- iplt + 1
-png(filename = paste0("plot_", iplt, ".png"))
 plot(log10(bk.homes$gross.sqft), log10(bk.homes$sale.price.n))
-dev.off()
 
 summary(bk.homes[which(bk.homes$sale.price.n < 100000),])
 
@@ -141,10 +159,40 @@ summary(bk.homes[which(bk.homes$sale.price.n < 100000),])
 bk.homes$outliers <- (log10(bk.homes$sale.price.n) <= 5) + 0
 bk.homes <- bk.homes[which(bk.homes$outliers == 0),]
 
-png(filename = paste0("price_per_sq_ft.png"))
-plot(log10(bk.homes$gross.sqft),log10(bk.homes$sale.price.n))
-dev.off()
+```
 
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+__After subsetting to 1,2,3 unit homes, removing outliers, and transform to log price__  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+
+- data set sufficiently cleaned and subsetted to support analysis of Manhattan housing prices   
+
+
+```{r echo=FALSE, message = FALSE}
+
+plot(log10(bk.homes$gross.sqft),log10(bk.homes$sale.price.n))
+```
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+__Analysis data set definition__  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+
+```{r echo=FALSE, message = FALSE}
+str(bk.homes)
+
+
+# ... -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# ...		END_OF_FILE
+# ... -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+```
+
+
+
+
+
+
+```{r echo=FALSE, message = FALSE}
 
 #output_html <- "cleaning.html"
 #knit_interim <- "cleaning.md"
@@ -162,6 +210,7 @@ setwd(analysis_dir)
 bk.homes$log_price <- log10(bk.homes$sale.price.n)
 bk.homes$dates <- as.Date(bk.homes$sale.date, "%m/%d/%Y")
 
+iplt <- 1
 iplt <- iplt + 1
 png(filename = paste0("plot_", iplt, ".png"))
 boxplot(log10(sale.price.n) ~ zip.code, data = bk.homes)
