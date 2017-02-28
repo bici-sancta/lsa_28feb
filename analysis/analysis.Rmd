@@ -1,0 +1,103 @@
+---
+title: "analysis - manhattan"
+author: "Robert Flamenbaum, Samira Zarandioon, Patrick McDevitt"
+date: "27 février 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Manhattan Project
+
+Some initial analysis to evalaute housing trend prices in relation to fundamental characteristics :  
+- property square footage  
+- zip code & neighborhood  
+- number of units in building  
+
+
+```{r manhattan.proj, echo = FALSE, message = FALSE}
+
+library(plyr)
+library(gdata)
+library(stringr)
+library(knitr)
+library(markdown)
+
+# ...	-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# ...	load the cleaned data set from ../data/ directory ...
+# ...	-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+data_dir <- "../data"
+Rda_dataset_name <- "manhattan.proj.Rda"
+
+load(paste0(data_dir, "/", Rda_dataset_name))
+
+# ...	-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# ...	do some analysis of the cleaned / subsetted / transformed data
+# ...	-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+bk.homes$log_price <- log10(bk.homes$sale.price.n)
+bk.homes$dates <- as.Date(bk.homes$sale.date, "%m/%d/%Y")
+
+```
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+__BoxPlot of sale price vs. Zip Code__  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+
+
+```{r echo = FALSE, message = FALSE}
+
+boxplot(log10(sale.price.n) ~ zip.code, data = bk.homes)
+```
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+__BoxPlot of sale price vs. Neighborhood__  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+
+```{r echo = FALSE, message = FALSE}
+boxplot(log10(sale.price.n) ~ neighborhood, data = bk.homes)
+```
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+__BoxPlot of sale price vs. Total Units__  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+
+```{r echo = FALSE, message = FALSE}
+boxplot(log10(sale.price.n) ~ total.units, data = bk.homes)
+```
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+__BoxPlot of sale price vs. Tax Classification__  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+
+```{r echo = FALSE, message = FALSE}
+boxplot(log10(sale.price.n) ~ tax.class.at.present, data = bk.homes)
+```
+
+
+```{r echo = FALSE, message = FALSE}
+by_zip <- ddply(bk.homes, c("neighborhood"), summarise,
+               N    = sum(!is.na(log_price)),
+               mean = mean(log_price, na.rm=TRUE),
+               sd   = sd(log_price, na.rm=TRUE),
+               se   = sd / sqrt(N) )
+```
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+__Trend plot vs. sale date - no obvious trend here__  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-  
+
+```{r echo = FALSE, message = FALSE}
+plot(log_price ~ dates, data = bk.homes, col = "blue")
+abline(lm(log_price ~ dates, data = bk.homes), col = "black", lty = 3, lwd = 3)
+
+
+# ... -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# ...		END_OF_FILE
+# ... -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+```
+
